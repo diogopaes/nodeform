@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2, GripVertical, User, Mail } from "lucide-react";
+import { Plus, Trash2, GripVertical, User, Mail, Trophy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Form,
   FormControl,
@@ -24,6 +25,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { useEditorStore } from "@/lib/stores";
 import type { SurveyNode, NodeData } from "@/types";
@@ -97,7 +99,7 @@ const getTypeColor = (type: string) => {
 };
 
 export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
-  const { updateNode, deleteNode } = useEditorStore();
+  const { updateNode, deleteNode, enableScoring } = useEditorStore();
 
   const getDefaultValues = (): FormData => {
     const { type } = node.data;
@@ -405,7 +407,14 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
                 <div className="space-y-4">
                   <Separator />
                   <div className="flex items-center justify-between">
-                    <FormLabel className="text-base">Opções</FormLabel>
+                    <div>
+                      <FormLabel className="text-base">Opções de Resposta</FormLabel>
+                      <p className="text-sm text-slate-500 mt-1">
+                        {node.data.type === "singleChoice"
+                          ? "O usuário poderá escolher apenas uma opção"
+                          : "O usuário poderá escolher múltiplas opções"}
+                      </p>
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
@@ -416,6 +425,15 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
                       Adicionar
                     </Button>
                   </div>
+
+                  {enableScoring && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <Trophy className="w-4 h-4 text-green-600" />
+                      <p className="text-sm text-green-700">
+                        Pontuação ativa: defina pontos para cada opção
+                      </p>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                     {fields.map((field, index) => (
@@ -440,22 +458,25 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name={`options.${index}.score`}
-                          render={({ field }) => (
-                            <FormItem className="w-24">
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  placeholder="Pts"
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
+                        {enableScoring && (
+                          <FormField
+                            control={form.control}
+                            name={`options.${index}.score`}
+                            render={({ field }) => (
+                              <FormItem className="w-24">
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="Pontos"
+                                    className="text-center"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        )}
 
                         <Button
                           type="button"
@@ -476,7 +497,12 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
               {node.data.type === "rating" && (
                 <div className="space-y-4">
                   <Separator />
-                  <FormLabel className="text-base">Configuração da Escala</FormLabel>
+                  <div>
+                    <FormLabel className="text-base">Configuração da Escala</FormLabel>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Defina o intervalo de valores para a avaliação
+                    </p>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -545,6 +571,21 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
                       )}
                     />
                   </div>
+
+                  {enableScoring && (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-green-600" />
+                        <p className="text-sm font-medium text-green-700">
+                          Pontuação Ativa
+                        </p>
+                      </div>
+                      <p className="text-sm text-green-600">
+                        O valor selecionado pelo usuário será usado como pontuação.
+                        Ex: Se escolher 4 em uma escala de 1-5, ganha 4 pontos.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

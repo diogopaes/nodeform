@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
+import { useEditorStore } from "@/lib/stores";
 import type { SingleChoiceData } from "@/types";
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export const SingleChoiceNode = memo(({ data, selected }: Props) => {
+  const enableScoring = useEditorStore((state) => state.enableScoring);
   return (
     <div
       className={`bg-white rounded-lg shadow-md border-2 min-w-[280px] max-w-[320px] relative ${
@@ -45,7 +47,7 @@ export const SingleChoiceNode = memo(({ data, selected }: Props) => {
             >
               <div className="w-4 h-4 rounded-full border-2 border-blue-500 flex-shrink-0" />
               <span className="text-sm text-gray-700 flex-1">{option.label}</span>
-              {option.score !== undefined && option.score > 0 && (
+              {enableScoring && option.score !== undefined && option.score > 0 && (
                 <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
                   +{option.score}
                 </span>
