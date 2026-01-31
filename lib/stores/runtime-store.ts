@@ -212,9 +212,14 @@ export const useRuntimeStore = create<RuntimeStoreState>((set, get) => ({
       }
 
       // Para singleChoice: verificar se o optionId bate
-      if (answer.selectedOptionId && edge.data?.optionId) {
-        console.log("Checking singleChoice edge:", edge.data.optionId, "vs", answer.selectedOptionId);
-        return edge.data.optionId === answer.selectedOptionId;
+      if (answer.selectedOptionId) {
+        // Se a edge tem optionId, verificar se bate com a resposta
+        if (edge.data?.optionId) {
+          console.log("Checking singleChoice edge:", edge.data.optionId, "vs", answer.selectedOptionId);
+          return edge.data.optionId === answer.selectedOptionId;
+        }
+        // Se a edge não tem optionId (edge antiga/genérica), não aceitar para singleChoice
+        return false;
       }
 
       // Para multipleChoice: buscar edge sem optionId (conexão padrão)
@@ -237,13 +242,9 @@ export const useRuntimeStore = create<RuntimeStoreState>((set, get) => ({
       return false;
     });
 
-    // Se não encontrou edge específica, usar a primeira disponível (fallback para dados antigos)
-    if (!matchingEdge && availableEdges.length > 0) {
-      console.log("No specific edge found, using first available edge as fallback");
-      matchingEdge = availableEdges[0];
-    }
-
     console.log("matchingEdge:", matchingEdge);
+
+    // Se não encontrou edge correspondente, a pesquisa finaliza (retorna null)
     return matchingEdge?.target || null;
   },
 
