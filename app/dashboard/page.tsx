@@ -47,7 +47,6 @@ export default function DashboardPage() {
   const [embedModalOpen, setEmbedModalOpen] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [embedSize, setEmbedSize] = useState<"small" | "medium" | "large">("medium");
 
   useEffect(() => {
     fetchData();
@@ -125,23 +124,13 @@ export default function DashboardPage() {
     return `${window.location.origin}/surveys/user/${session.user.id}`;
   };
 
-  const getEmbedDimensions = () => {
-    const sizes = {
-      small: { width: 400, height: 450 },
-      medium: { width: 600, height: 550 },
-      large: { width: 800, height: 650 },
-    };
-    return sizes[embedSize];
-  };
-
   const getEmbedCode = () => {
-    const { width, height } = getEmbedDimensions();
     return `<iframe
   src="${getSurveysListUrl()}?embed=true"
-  width="${width}"
-  height="${height}"
+  width="100%"
+  height="600"
   frameborder="0"
-  style="border: none; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"
+  style="border: none;"
 ></iframe>`;
   };
 
@@ -198,28 +187,8 @@ export default function DashboardPage() {
               <div className="space-y-4 mt-4">
                 <p className="text-sm text-slate-500">
                   Copie o código abaixo para incorporar uma lista de todas as suas pesquisas publicadas no seu site.
+                  O widget ocupa 100% da largura do container.
                 </p>
-
-                {/* Size Selection */}
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-2 block">
-                    Tamanho do Widget
-                  </label>
-                  <div className="flex gap-2">
-                    {(["small", "medium", "large"] as const).map((size) => (
-                      <Button
-                        key={size}
-                        variant={embedSize === size ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setEmbedSize(size)}
-                      >
-                        {size === "small" && "Pequeno (400x450)"}
-                        {size === "medium" && "Médio (600x550)"}
-                        {size === "large" && "Grande (800x650)"}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
 
                 {/* Embed Code */}
                 <div className="relative">
@@ -252,18 +221,14 @@ export default function DashboardPage() {
                     Prévia
                   </label>
                   <div className="border rounded-lg p-4 bg-slate-50">
-                    <div className="flex justify-center">
-                      <iframe
-                        src={`${getSurveysListUrl()}?embed=true`}
-                        width={Math.min(getEmbedDimensions().width, 500)}
-                        height={Math.min(getEmbedDimensions().height, 350)}
-                        style={{
-                          border: "none",
-                          borderRadius: "12px",
-                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                        }}
-                      />
-                    </div>
+                    <iframe
+                      src={`${getSurveysListUrl()}?embed=true`}
+                      width="100%"
+                      height="400"
+                      style={{
+                        border: "none",
+                      }}
+                    />
                   </div>
                 </div>
 

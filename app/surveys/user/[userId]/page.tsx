@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { FileText, Users, Loader2 } from "lucide-react";
+import { FileText, Loader2, Clock, Gift } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +12,8 @@ interface PublicSurvey {
   title: string;
   description?: string;
   responseCount: number;
+  timeLimit?: number;
+  prize?: string;
   updatedAt: string;
 }
 
@@ -51,9 +53,9 @@ export default function UserSurveysPage({
 
   if (loading) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 ${isEmbedMode ? "p-4" : "p-8"}`}>
+      <div className={`min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 ${isEmbedMode ? "p-4" : "p-8"}`}>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
         </div>
       </div>
     );
@@ -61,7 +63,7 @@ export default function UserSurveysPage({
 
   if (error) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 ${isEmbedMode ? "p-4" : "p-8"}`}>
+      <div className={`min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 ${isEmbedMode ? "p-4" : "p-8"}`}>
         <div className="text-center py-12">
           <p className="text-gray-600">{error}</p>
         </div>
@@ -70,7 +72,7 @@ export default function UserSurveysPage({
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 ${isEmbedMode ? "p-4" : "p-8"}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 ${isEmbedMode ? "p-10" : "p-8"}`}>
       <div className={`mx-auto ${isEmbedMode ? "max-w-full" : "max-w-4xl"}`}>
         {!isEmbedMode && (
           <div className="text-center mb-8">
@@ -85,39 +87,47 @@ export default function UserSurveysPage({
             <p className="text-gray-600">Nenhuma pesquisa disponível no momento</p>
           </div>
         ) : (
-          <div className={`grid gap-4 ${isEmbedMode ? "grid-cols-1" : "md:grid-cols-2"}`}>
+          <div className={`grid gap-4 ${isEmbedMode ? "grid-cols-2 max-w-3xl mx-auto" : "md:grid-cols-4"}`}>
             {surveys.map((survey) => (
-              <Card key={survey.id} className="hover:shadow-lg transition-shadow">
+              <Card key={survey.id} className="bg-white hover:shadow-lg transition-shadow border-0 shadow-md rounded-xl overflow-hidden">
                 <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                        {survey.title}
-                      </h3>
-                      {survey.description && (
-                        <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                          {survey.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400 flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {survey.responseCount} respostas
-                        </span>
-                        <Link
-                          href={`/survey/${survey.id}${isEmbedMode ? "?embed=true" : ""}`}
-                          target={isEmbedMode ? "_blank" : undefined}
-                        >
-                          <Button size="sm">
-                            Participar
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
+                  {/* Título */}
+                  <h3 className="font-bold text-primary text-lg mb-2 leading-tight">
+                    {survey.title}
+                  </h3>
+
+                  {/* Descrição */}
+                  {survey.description && (
+                    <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                      {survey.description}
+                    </p>
+                  )}
+
+                  {/* Informações */}
+                  <div className="space-y-2 mb-4">
+                    {survey.timeLimit && (
+                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>Estimativa de Tempo: <strong>{survey.timeLimit} minutos</strong></span>
+                      </p>
+                    )}
+                    {survey.prize && (
+                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-gray-400" />
+                        <span>Remuneração: <strong>{survey.prize}</strong></span>
+                      </p>
+                    )}
                   </div>
+
+                  {/* Botão */}
+                  <Link
+                    href={`/survey/${survey.id}${isEmbedMode ? "?embed=true" : ""}`}
+                    target={isEmbedMode ? "_blank" : undefined}
+                  >
+                    <Button className="bg-primary hover:bg-blue-700 text-white rounded-lg px-6">
+                      Participar
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}

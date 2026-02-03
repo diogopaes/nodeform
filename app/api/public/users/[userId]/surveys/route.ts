@@ -24,6 +24,8 @@ export async function GET(
           description: data.description,
           status: data.status,
           responseCount: data.responseCount || 0,
+          timeLimit: data.timeLimit,
+          prize: data.prize,
           updatedAt: data.updatedAt,
         };
       })
