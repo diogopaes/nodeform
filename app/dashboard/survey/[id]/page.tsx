@@ -19,6 +19,9 @@ import {
   ChevronDown,
   ChevronUp,
   Code,
+  Globe,
+  FileEdit,
+  Archive,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +34,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Survey, SurveyResponse } from "@/types/survey";
 
 export default function SurveyDetailPage({
@@ -108,6 +117,24 @@ export default function SurveyDetailPage({
       }
     } catch (error) {
       console.error("Error deleting response:", error);
+    }
+  };
+
+  const handleUpdateStatus = async (newStatus: Survey["status"]) => {
+    if (!survey) return;
+
+    try {
+      const res = await fetch(`/api/surveys/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (res.ok) {
+        setSurvey({ ...survey, status: newStatus });
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
     }
   };
 
@@ -241,7 +268,36 @@ export default function SurveyDetailPage({
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-slate-900">{survey.title}</h1>
-            {getStatusBadge(survey.status)}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="cursor-pointer">
+                  {getStatusBadge(survey.status)}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem
+                  onClick={() => handleUpdateStatus("draft")}
+                  className={survey.status === "draft" ? "bg-slate-100" : ""}
+                >
+                  <FileEdit className="w-4 h-4 mr-2 text-slate-600" />
+                  Rascunho
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleUpdateStatus("published")}
+                  className={survey.status === "published" ? "bg-slate-100" : ""}
+                >
+                  <Globe className="w-4 h-4 mr-2 text-green-600" />
+                  Publicar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleUpdateStatus("archived")}
+                  className={survey.status === "archived" ? "bg-slate-100" : ""}
+                >
+                  <Archive className="w-4 h-4 mr-2 text-amber-600" />
+                  Arquivar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           {survey.description && (
             <p className="text-slate-500">{survey.description}</p>
@@ -256,15 +312,15 @@ export default function SurveyDetailPage({
               </>
             ) : (
               <>
-                <LinkIcon className="w-4 h-4 mr-2" />
-                Copiar Link
+                <LinkIcon className="w-4 h-4 mr-1" />
+                Compartilhar
               </>
             )}
           </Button>
           <Dialog open={embedModalOpen} onOpenChange={setEmbedModalOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Code className="w-4 h-4 mr-2" />
+                <Code className="w-4 h-4 mr-1" />
                 Incorporar
               </Button>
             </DialogTrigger>
@@ -351,8 +407,8 @@ export default function SurveyDetailPage({
             </DialogContent>
           </Dialog>
           <Button onClick={() => router.push(`/editor/${survey.id}`)}>
-            <Pencil className="w-4 h-4 mr-2" />
-            Editar Pesquisa
+            <Pencil className="w-4 h-4 mr-1" />
+            Editar
           </Button>
         </div>
       </div>

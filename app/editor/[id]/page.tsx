@@ -186,7 +186,7 @@ export default function EditorPage({
             onClick={handleClearSurvey}
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
+            <Trash2 className="w-4 h-4" />
             Limpar
           </Button>
 
@@ -197,11 +197,11 @@ export default function EditorPage({
             disabled={saving}
           >
             {saving ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4  animate-spin" />
             ) : saved ? (
-              <Check className="w-4 h-4 mr-2 text-green-600" />
+              <Check className="w-4 h-4 text-green-600" />
             ) : (
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4 " />
             )}
             {saved ? "Salvo!" : "Salvar"}
           </Button>
@@ -211,7 +211,7 @@ export default function EditorPage({
             onClick={handleTestSurvey}
             className="bg-green-600 hover:bg-green-700"
           >
-            <Play className="w-4 h-4 mr-2" />
+            <Play className="w-4 h-4" />
             Testar
           </Button>
         </div>

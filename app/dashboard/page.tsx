@@ -175,15 +175,15 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-                <LinkIcon className="w-4 h-4 mr-2" />
-                Copiar Link
+                <LinkIcon className="w-4 h-4 mr-1" />
+                Compartilhar
               </>
             )}
           </Button>
           <Dialog open={embedModalOpen} onOpenChange={setEmbedModalOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Code className="w-4 h-4 mr-2" />
+                <Code className="w-4 h-4 mr-1" />
                 Incorporar
               </Button>
             </DialogTrigger>
@@ -274,9 +274,9 @@ export default function DashboardPage() {
           </Dialog>
           <Button onClick={handleCreateSurvey} disabled={creating}>
             {creating ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
             ) : (
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 mr-1" />
             )}
             Nova Pesquisa
           </Button>
@@ -409,7 +409,7 @@ export default function DashboardPage() {
                       size="sm"
                       onClick={() => router.push(`/dashboard/survey/${survey.id}`)}
                     >
-                      <Eye className="w-4 h-4 mr-2" />
+                      <Eye className="w-4 h-4 " />
                       Ver
                     </Button>
                     <Button
@@ -417,7 +417,7 @@ export default function DashboardPage() {
                       size="sm"
                       onClick={() => router.push(`/editor/${survey.id}`)}
                     >
-                      <Pencil className="w-4 h-4 mr-2" />
+                      <Pencil className="w-4 h-4 " />
                       Editar
                     </Button>
                     <DropdownMenu>
