@@ -61,7 +61,7 @@ export async function updateSurvey(
   data: Partial<
     Pick<
       Survey,
-      "title" | "description" | "nodes" | "edges" | "enableScoring" | "status"
+      "title" | "description" | "nodes" | "edges" | "enableScoring" | "status" | "timeLimit" | "prize"
     >
   >
 ): Promise<void> {
@@ -82,7 +82,10 @@ export async function saveSurveyContent(
   nodes: SurveyNode[],
   edges: SurveyEdge[],
   title?: string,
-  enableScoring?: boolean
+  enableScoring?: boolean,
+  description?: string,
+  timeLimit?: number | null,
+  prize?: string | null
 ): Promise<void> {
   const { db } = getFirebaseAdmin();
 
@@ -94,6 +97,9 @@ export async function saveSurveyContent(
 
   if (title !== undefined) updateData.title = title;
   if (enableScoring !== undefined) updateData.enableScoring = enableScoring;
+  if (description !== undefined) updateData.description = description;
+  if (timeLimit !== undefined) updateData.timeLimit = timeLimit;
+  if (prize !== undefined) updateData.prize = prize;
 
   await db.collection("surveys").doc(surveyId).update(updateData);
 }

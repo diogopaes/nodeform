@@ -9,11 +9,24 @@ import {
   Save,
   Loader2,
   Check,
+  Clock,
+  Gift,
+  FileText,
+  Settings,
 } from "lucide-react";
 import { FlowCanvas } from "@/components/editor/flow-canvas";
 import { EditorSidebar } from "@/components/editor/editor-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useEditorStore } from "@/lib/stores";
 import { Survey } from "@/types/survey";
 
@@ -28,18 +41,32 @@ export default function EditorPage({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
 
   const {
     nodes,
     edges,
-    surveyId,
     surveyTitle,
+    surveyDescription,
     enableScoring,
+    timeLimit,
+    prize,
+    isConfigured,
     setEnableScoring,
     setSurveyTitle,
+    setSurveyDescription,
+    setTimeLimit,
+    setPrize,
+    setIsConfigured,
     loadSurvey,
     clearSurvey,
   } = useEditorStore();
+
+  // Estados do modal de configuração
+  const [configTitle, setConfigTitle] = useState("");
+  const [configDescription, setConfigDescription] = useState("");
+  const [configTimeLimit, setConfigTimeLimit] = useState("");
+  const [configPrize, setConfigPrize] = useState("");
 
   useEffect(() => {
     fetchSurvey();
@@ -71,9 +98,12 @@ export default function EditorPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: surveyTitle,
+          description: surveyDescription,
           nodes,
           edges,
           enableScoring,
+          timeLimit: timeLimit || null,
+          prize: prize || null,
         }),
       });
       setSaved(true);
@@ -83,7 +113,45 @@ export default function EditorPage({
     } finally {
       setSaving(false);
     }
-  }, [id, surveyTitle, nodes, edges, enableScoring]);
+  }, [id, surveyTitle, surveyDescription, nodes, edges, enableScoring, timeLimit, prize]);
+
+  const handleOpenConfig = () => {
+    // Preencher os campos com os valores atuais
+    setConfigTitle(surveyTitle);
+    setConfigDescription(surveyDescription);
+    setConfigTimeLimit(timeLimit ? String(timeLimit) : "");
+    setConfigPrize(prize || "");
+    setShowConfigModal(true);
+  };
+
+  const handleSaveConfig = async () => {
+    if (!configTitle.trim()) {
+      return;
+    }
+
+    setSurveyTitle(configTitle.trim());
+    setSurveyDescription(configDescription.trim());
+    setTimeLimit(configTimeLimit ? parseInt(configTimeLimit) : undefined);
+    setPrize(configPrize.trim() || undefined);
+    setIsConfigured(true);
+    setShowConfigModal(false);
+
+    // Salvar configuração
+    try {
+      await fetch(`/api/surveys/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: configTitle.trim(),
+          description: configDescription.trim(),
+          timeLimit: configTimeLimit ? parseInt(configTimeLimit) : null,
+          prize: configPrize.trim() || null,
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving config:", error);
+    }
+  };
 
   const handleTestSurvey = () => {
     if (nodes.length === 0) {
@@ -125,6 +193,104 @@ export default function EditorPage({
 
   return (
     <div className="h-screen w-screen flex flex-col">
+      {/* Modal de Configuração */}
+      <Dialog open={showConfigModal || !isConfigured} onOpenChange={(open) => {
+        if (isConfigured) setShowConfigModal(open);
+      }}>
+        <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => {
+          if (!isConfigured) e.preventDefault();
+        }}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <FileText className="w-5 h-5 text-blue-600" />
+              Configurar Pesquisa
+            </DialogTitle>
+            <DialogDescription>
+              Defina as informações básicas da sua pesquisa antes de começar a editar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="config-title">
+                Nome da Pesquisa <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="config-title"
+                placeholder="Ex: Pesquisa de Satisfação do Cliente"
+                value={configTitle}
+                onChange={(e) => setConfigTitle(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="config-description">Descrição (opcional)</Label>
+              <Textarea
+                id="config-description"
+                placeholder="Descreva brevemente o objetivo da pesquisa..."
+                value={configDescription}
+                onChange={(e) => setConfigDescription(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="config-time" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-slate-500" />
+                  Tempo Limite (opcional)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="config-time"
+                    type="number"
+                    placeholder="Ex: 10"
+                    min="1"
+                    value={configTimeLimit}
+                    onChange={(e) => setConfigTimeLimit(e.target.value)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                    minutos
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="config-prize" className="flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-slate-500" />
+                  Prêmio (opcional)
+                </Label>
+                <Input
+                  id="config-prize"
+                  placeholder="Ex: R$ 50 em vale-compras"
+                  value={configPrize}
+                  onChange={(e) => setConfigPrize(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <Button
+              className="w-full mt-6"
+              size="lg"
+              onClick={handleSaveConfig}
+              disabled={!configTitle.trim()}
+            >
+              {isConfigured ? (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Salvar
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  Iniciar Edição
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <header className="h-16 border-b bg-white flex items-center justify-between px-6 shadow-sm z-10">
         <div className="flex items-center gap-4">
@@ -155,6 +321,15 @@ export default function EditorPage({
               {surveyTitle}
             </button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleOpenConfig}
+            className="text-slate-500 hover:text-slate-700"
+            title="Configurações da pesquisa"
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
         </div>
 
         <div className="flex items-center gap-4">

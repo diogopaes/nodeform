@@ -111,6 +111,8 @@ export interface Survey {
   enableScoring?: boolean;
   status: "draft" | "published" | "archived";
   responseCount: number;
+  timeLimit?: number; // Tempo limite em minutos (opcional)
+  prize?: string; // Prêmio da pesquisa (opcional)
 }
 
 /**

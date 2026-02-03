@@ -20,6 +20,9 @@ interface EditorState {
   surveyTitle: string;
   surveyDescription: string;
   enableScoring: boolean;
+  timeLimit?: number;
+  prize?: string;
+  isConfigured: boolean; // Se o modal inicial foi preenchido
 
   // Actions para nodes
   setNodes: (nodes: SurveyNode[]) => void;
@@ -38,6 +41,9 @@ interface EditorState {
   setSurveyTitle: (title: string) => void;
   setSurveyDescription: (description: string) => void;
   setEnableScoring: (enable: boolean) => void;
+  setTimeLimit: (time: number | undefined) => void;
+  setPrize: (prize: string | undefined) => void;
+  setIsConfigured: (configured: boolean) => void;
   loadSurvey: (survey: Survey) => void;
   clearSurvey: () => void;
 
@@ -57,6 +63,9 @@ export const useEditorStore = create<EditorState>()(
       surveyTitle: "Nova Pesquisa",
       surveyDescription: "",
       enableScoring: true,
+      timeLimit: undefined,
+      prize: undefined,
+      isConfigured: false,
 
       // Node actions
       setNodes: (nodes) => set({ nodes }),
@@ -128,12 +137,23 @@ export const useEditorStore = create<EditorState>()(
 
       setEnableScoring: (enable) => set({ enableScoring: enable }),
 
+      setTimeLimit: (time) => set({ timeLimit: time }),
+
+      setPrize: (prize) => set({ prize: prize }),
+
+      setIsConfigured: (configured) => set({ isConfigured: configured }),
+
       loadSurvey: (survey) => {
+        // Se a pesquisa já tem nodes ou foi configurada (título diferente de "Nova Pesquisa")
+        const isConfigured = survey.nodes.length > 0 || survey.title !== "Nova Pesquisa";
         set({
           surveyId: survey.id,
           surveyTitle: survey.title,
           surveyDescription: survey.description || "",
           enableScoring: survey.enableScoring ?? true,
+          timeLimit: survey.timeLimit,
+          prize: survey.prize,
+          isConfigured,
           nodes: survey.nodes,
           edges: survey.edges,
         });
@@ -145,6 +165,9 @@ export const useEditorStore = create<EditorState>()(
           surveyTitle: "Nova Pesquisa",
           surveyDescription: "",
           enableScoring: true,
+          timeLimit: undefined,
+          prize: undefined,
+          isConfigured: false,
           nodes: [],
           edges: [],
         });
@@ -159,6 +182,8 @@ export const useEditorStore = create<EditorState>()(
           title: state.surveyTitle,
           description: state.surveyDescription,
           enableScoring: state.enableScoring,
+          timeLimit: state.timeLimit,
+          prize: state.prize,
           nodes: state.nodes,
           edges: state.edges,
           createdAt: new Date().toISOString(),
@@ -175,6 +200,9 @@ export const useEditorStore = create<EditorState>()(
         surveyTitle: state.surveyTitle,
         surveyDescription: state.surveyDescription,
         enableScoring: state.enableScoring,
+        timeLimit: state.timeLimit,
+        prize: state.prize,
+        isConfigured: state.isConfigured,
         nodes: state.nodes,
         edges: state.edges,
       }),

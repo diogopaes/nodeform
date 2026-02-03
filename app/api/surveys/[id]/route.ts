@@ -67,7 +67,10 @@ export async function PATCH(
         body.nodes ?? survey.nodes,
         body.edges ?? survey.edges,
         body.title,
-        body.enableScoring
+        body.enableScoring,
+        body.description,
+        body.timeLimit,
+        body.prize
       );
     } else {
       // Atualizar outros campos
