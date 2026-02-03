@@ -180,6 +180,7 @@ export default function SurveyDetailPage({
     const variants = {
       draft: { label: "Rascunho", className: "bg-slate-100 text-slate-700" },
       published: { label: "Publicada", className: "bg-green-100 text-green-700" },
+      finished: { label: "Finalizada", className: "bg-blue-100 text-blue-700" },
       archived: { label: "Arquivada", className: "bg-amber-100 text-amber-700" },
     };
     const variant = variants[status];
@@ -288,6 +289,13 @@ export default function SurveyDetailPage({
                 >
                   <Globe className="w-4 h-4 mr-2 text-green-600" />
                   Publicar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleUpdateStatus("finished")}
+                  className={survey.status === "finished" ? "bg-slate-100" : ""}
+                >
+                  <Check className="w-4 h-4 mr-2 text-blue-600" />
+                  Finalizar
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleUpdateStatus("archived")}

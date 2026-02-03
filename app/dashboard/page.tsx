@@ -105,6 +105,7 @@ export default function DashboardPage() {
     const variants = {
       draft: { label: "Rascunho", className: "bg-slate-100 text-slate-700" },
       published: { label: "Publicada", className: "bg-green-100 text-green-700" },
+      finished: { label: "Finalizada", className: "bg-blue-100 text-blue-700" },
       archived: { label: "Arquivada", className: "bg-amber-100 text-amber-700" },
     };
     const variant = variants[status];

@@ -109,7 +109,7 @@ export interface Survey {
   createdAt: string;
   updatedAt: string;
   enableScoring?: boolean;
-  status: "draft" | "published" | "archived";
+  status: "draft" | "published" | "finished" | "archived";
   responseCount: number;
   timeLimit?: number; // Tempo limite em minutos (opcional)
   prize?: string; // Prêmio da pesquisa (opcional)
