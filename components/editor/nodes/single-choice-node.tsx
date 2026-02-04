@@ -79,7 +79,7 @@ export const SingleChoiceNode = memo(({ data, selected }: Props) => {
           id={option.id}
           className="!w-3 !h-3 !bg-blue-500 !border-2 !border-white !-right-1.5"
           style={{
-            top: `${72 + index * 30}px`,
+            top: `${110 + index * 35}px`,
           }}
         />
       ))}
