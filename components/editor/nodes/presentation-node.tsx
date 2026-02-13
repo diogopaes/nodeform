@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Play, User, Mail } from "lucide-react";
+import { Play, User, Mail, FileText } from "lucide-react";
 import type { PresentationData } from "@/types";
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const PresentationNode = memo(({ data, selected }: Props) => {
-  const hasDataCollection = data.collectName || data.collectEmail;
+  const hasDataCollection = data.collectName || data.collectEmail || data.collectTerms;
 
   return (
     <div
@@ -51,6 +51,13 @@ export const PresentationNode = memo(({ data, selected }: Props) => {
                 <Mail className="w-3 h-3 text-gray-400" />
                 <span>{data.emailLabel || "E-mail"}</span>
                 {data.emailRequired && <span className="text-red-400">*</span>}
+              </div>
+            )}
+            {data.collectTerms && (
+              <div className="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-md text-xs text-gray-500">
+                <FileText className="w-3 h-3 text-gray-400" />
+                <span className="truncate">{data.termsText || "Termos de Uso"}</span>
+                {data.termsRequired && <span className="text-red-400">*</span>}
               </div>
             )}
           </div>

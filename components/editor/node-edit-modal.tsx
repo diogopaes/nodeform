@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2, GripVertical, User, Mail, Trophy, Play, CircleDot, CheckSquare, Star } from "lucide-react";
+import { Plus, Trash2, GripVertical, User, Mail, Trophy, Play, CircleDot, CheckSquare, Star, FlagTriangleRight, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Switch } from "@/components/ui/switch";
 import {
   Form,
@@ -33,6 +34,7 @@ interface NodeEditModalProps {
 const baseSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
   description: z.string().optional(),
+  image: z.string().optional(),
 });
 
 // Schema para presentation
@@ -45,6 +47,10 @@ const presentationSchema = baseSchema.extend({
   emailLabel: z.string().optional(),
   nameRequired: z.boolean().optional(),
   emailRequired: z.boolean().optional(),
+  collectTerms: z.boolean().optional(),
+  termsText: z.string().optional(),
+  termsUrl: z.string().optional(),
+  termsRequired: z.boolean().optional(),
 });
 
 // Schema para opções
@@ -69,7 +75,13 @@ const ratingSchema = baseSchema.extend({
   maxLabel: z.string().optional(),
 });
 
-type FormData = z.infer<typeof presentationSchema> | z.infer<typeof choiceSchema> | z.infer<typeof ratingSchema>;
+// Schema para endScreen
+const endScreenSchema = baseSchema.extend({
+  type: z.literal("endScreen"),
+  showScore: z.boolean().optional(),
+});
+
+type FormData = z.infer<typeof presentationSchema> | z.infer<typeof choiceSchema> | z.infer<typeof ratingSchema> | z.infer<typeof endScreenSchema>;
 
 const getTypeConfig = (type: string) => {
   const configs: Record<string, { label: string; icon: typeof Play; color: string; bg: string }> = {
@@ -77,12 +89,13 @@ const getTypeConfig = (type: string) => {
     singleChoice: { label: "Escolha Simples", icon: CircleDot, color: "text-blue-600", bg: "bg-blue-100" },
     multipleChoice: { label: "Múltipla Escolha", icon: CheckSquare, color: "text-green-600", bg: "bg-green-100" },
     rating: { label: "Avaliação", icon: Star, color: "text-purple-600", bg: "bg-purple-100" },
+    endScreen: { label: "Tela Final", icon: FlagTriangleRight, color: "text-rose-600", bg: "bg-rose-100" },
   };
   return configs[type] || configs.presentation;
 };
 
 export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
-  const { updateNode, deleteNode, enableScoring } = useEditorStore();
+  const { updateNode, deleteNode, enableScoring, surveyId } = useEditorStore();
   const typeConfig = getTypeConfig(node.data.type);
   const Icon = typeConfig.icon;
 
@@ -98,11 +111,16 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
         emailLabel?: string;
         nameRequired?: boolean;
         emailRequired?: boolean;
+        collectTerms?: boolean;
+        termsText?: string;
+        termsUrl?: string;
+        termsRequired?: boolean;
       };
       return {
         type: "presentation",
         title: node.data.title,
         description: node.data.description || "",
+        image: (node.data as { image?: string }).image || "",
         buttonText: presData.buttonText || "Iniciar",
         collectName: presData.collectName || false,
         collectEmail: presData.collectEmail || false,
@@ -110,6 +128,10 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
         emailLabel: presData.emailLabel || "E-mail",
         nameRequired: presData.nameRequired || false,
         emailRequired: presData.emailRequired || false,
+        collectTerms: presData.collectTerms || false,
+        termsText: presData.termsText || "Aceito os termos e condições",
+        termsUrl: presData.termsUrl || "",
+        termsRequired: presData.termsRequired || false,
       };
     }
 
@@ -118,6 +140,7 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
         type,
         title: node.data.title,
         description: node.data.description || "",
+        image: (node.data as { image?: string }).image || "",
         options: (node.data as { options: Array<{ id: string; label: string; score?: number }> }).options,
       };
     }
@@ -128,10 +151,22 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
         type: "rating",
         title: node.data.title,
         description: node.data.description || "",
+        image: (node.data as { image?: string }).image || "",
         minValue: ratingData.minValue,
         maxValue: ratingData.maxValue,
         minLabel: ratingData.minLabel || "",
         maxLabel: ratingData.maxLabel || "",
+      };
+    }
+
+    if (type === "endScreen") {
+      const endData = node.data as { showScore?: boolean };
+      return {
+        type: "endScreen",
+        title: node.data.title,
+        description: node.data.description || "",
+        image: (node.data as { image?: string }).image || "",
+        showScore: endData.showScore || false,
       };
     }
 
@@ -149,6 +184,8 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
         ? presentationSchema
         : node.data.type === "rating"
         ? ratingSchema
+        : node.data.type === "endScreen"
+        ? endScreenSchema
         : choiceSchema
     ),
     defaultValues: getDefaultValues(),
@@ -237,6 +274,24 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
                       />
                     </FormControl>
                     <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Imagem */}
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <label className="text-xs font-medium text-gray-700">Imagem</label>
+                    <FormControl>
+                      <ImageUpload
+                        value={field.value}
+                        onChange={field.onChange}
+                        surveyId={surveyId}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -365,6 +420,74 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
                           <FormField
                             control={form.control}
                             name="emailRequired"
+                            render={({ field }) => (
+                              <FormItem className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">Obrigatório</span>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    className="scale-75"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Termos */}
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-700">Termos de Uso</span>
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="collectTerms"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  className="scale-90"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {form.watch("collectTerms") && (
+                        <div className="space-y-2 pt-1">
+                          <FormField
+                            control={form.control}
+                            name="termsText"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input placeholder="Texto do checkbox" className="h-8 text-sm" {...field} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="termsUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input placeholder="Link dos termos (https://...)" className="h-8 text-sm" {...field} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="termsRequired"
                             render={({ field }) => (
                               <FormItem className="flex items-center gap-2">
                                 <span className="text-xs text-gray-500">Obrigatório</span>
@@ -562,6 +685,29 @@ export function NodeEditModal({ node, isOpen, onClose }: NodeEditModalProps) {
                       </p>
                     </div>
                   )}
+                </div>
+              )}
+              {node.data.type === "endScreen" && (
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <FormField
+                    control={form.control}
+                    name="showScore"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between">
+                        <div>
+                          <span className="text-sm font-medium text-gray-700">Exibir Pontuação</span>
+                          <p className="text-xs text-gray-400 mt-0.5">Mostra o score total ao respondente</p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="scale-90"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               )}
             </div>

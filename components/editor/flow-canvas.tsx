@@ -17,7 +17,7 @@ import "@xyflow/react/dist/style.css";
 import { useEditorStore } from "@/lib/stores";
 import { nodeTypes } from "./nodes";
 import { NodeEditModal } from "./node-edit-modal";
-import type { SurveyNode, PresentationData, SingleChoiceData, MultipleChoiceData, RatingData } from "@/types";
+import type { SurveyNode, PresentationData, SingleChoiceData, MultipleChoiceData, RatingData, EndScreenData } from "@/types";
 
 const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -62,6 +62,13 @@ const getDefaultNodeData = (type: string) => {
         minLabel: "Muito Insatisfeito",
         maxLabel: "Muito Satisfeito",
       } as RatingData;
+    case "endScreen":
+      return {
+        type: "endScreen",
+        title: "Obrigado!",
+        description: "Sua resposta foi registrada com sucesso.",
+        showScore: false,
+      } as EndScreenData;
     default:
       return null;
   }

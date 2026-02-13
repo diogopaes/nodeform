@@ -3,7 +3,7 @@ import { Node, Edge } from "@xyflow/react";
 /**
  * Tipos de nós suportados no editor
  */
-export type NodeType = "presentation" | "singleChoice" | "multipleChoice" | "rating";
+export type NodeType = "presentation" | "singleChoice" | "multipleChoice" | "rating" | "endScreen";
 
 /**
  * Dados específicos para nó de apresentação (intro)
@@ -19,6 +19,10 @@ export interface PresentationData {
   emailLabel?: string;
   nameRequired?: boolean;
   emailRequired?: boolean;
+  collectTerms?: boolean;
+  termsText?: string;
+  termsUrl?: string;
+  termsRequired?: boolean;
   [key: string]: unknown;
 }
 
@@ -69,9 +73,20 @@ export interface RatingData {
 }
 
 /**
+ * Dados específicos para nó de tela final
+ */
+export interface EndScreenData {
+  type: "endScreen";
+  title: string;
+  description?: string;
+  showScore?: boolean;
+  [key: string]: unknown;
+}
+
+/**
  * União de todos os tipos de dados de nó
  */
-export type NodeData = PresentationData | SingleChoiceData | MultipleChoiceData | RatingData;
+export type NodeData = PresentationData | SingleChoiceData | MultipleChoiceData | RatingData | EndScreenData;
 
 /**
  * Nó de pesquisa (extends Node do React Flow)

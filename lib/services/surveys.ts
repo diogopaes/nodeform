@@ -145,17 +145,24 @@ export async function saveResponse(
   const responseRef = db.collection("surveys").doc(surveyId).collection("responses").doc();
 
   const now = new Date().toISOString();
-  const response: SurveyResponse = {
+
+  // Remove undefined values to avoid Firestore errors
+  const cleanAnswers = data.answers.map((a) =>
+    Object.fromEntries(Object.entries(a).filter(([, v]) => v !== undefined))
+  );
+
+  const response: Record<string, unknown> = {
     id: responseRef.id,
     surveyId,
-    answers: data.answers,
+    answers: cleanAnswers,
     totalScore: data.totalScore,
     path: data.path,
-    respondentName: data.respondentName,
-    respondentEmail: data.respondentEmail,
     completedAt: now,
     createdAt: now,
   };
+
+  if (data.respondentName) response.respondentName = data.respondentName;
+  if (data.respondentEmail) response.respondentEmail = data.respondentEmail;
 
   // Salvar resposta e incrementar contador em batch
   const batch = db.batch();
@@ -166,7 +173,7 @@ export async function saveResponse(
 
   await batch.commit();
 
-  return response;
+  return response as unknown as SurveyResponse;
 }
 
 // Buscar respostas de uma pesquisa

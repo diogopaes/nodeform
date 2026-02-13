@@ -1,7 +1,9 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
+import { getStorage, Storage } from "firebase-admin/storage";
 
 let db: Firestore | undefined;
+let storage: Storage | undefined;
 
 function getFirebaseAdmin() {
   const apps = getApps();
@@ -25,6 +27,7 @@ function getFirebaseAdmin() {
         // A private key vem com \n escapados, precisamos converter
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
       }),
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
     });
   }
 
@@ -32,7 +35,11 @@ function getFirebaseAdmin() {
     db = getFirestore();
   }
 
-  return { db, FieldValue };
+  if (!storage) {
+    storage = getStorage();
+  }
+
+  return { db, storage, FieldValue };
 }
 
 export { getFirebaseAdmin };

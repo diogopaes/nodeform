@@ -5,6 +5,7 @@ export type {
   SingleChoiceData,
   MultipleChoiceData,
   RatingData,
+  EndScreenData,
   NodeData,
   SurveyNode,
   EdgeData,

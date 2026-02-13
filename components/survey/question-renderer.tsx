@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Star, Check, ArrowRight, User, Mail } from "lucide-react";
-import type { SurveyNode, PresentationData } from "@/types";
+import { Star, Check, ArrowRight, User, Mail, Trophy } from "lucide-react";
+import type { SurveyNode, PresentationData, EndScreenData } from "@/types";
 
 function HtmlDescription({ html, className }: { html: string; className?: string }) {
   return (
@@ -10,6 +10,15 @@ function HtmlDescription({ html, className }: { html: string; className?: string
       className={className}
       dangerouslySetInnerHTML={{ __html: html }}
     />
+  );
+}
+
+function NodeImage({ src }: { src?: string }) {
+  if (!src) return null;
+  return (
+    <div className="rounded-xl overflow-hidden">
+      <img src={src} alt="" className="w-full max-h-64 object-cover" />
+    </div>
   );
 }
 
@@ -22,14 +31,16 @@ interface QuestionRendererProps {
     respondentName?: string;
     respondentEmail?: string;
   }) => void;
+  totalScore?: number;
 }
 
-export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
+export function QuestionRenderer({ node, onAnswer, totalScore = 0 }: QuestionRendererProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [respondentName, setRespondentName] = useState<string>("");
   const [respondentEmail, setRespondentEmail] = useState<string>("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleSubmit = () => {
     if (node.data.type === "presentation") {
@@ -83,6 +94,10 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
       }
     }
 
+    if (presentationData.collectTerms && presentationData.termsRequired && !termsAccepted) {
+      return false;
+    }
+
     return true;
   };
 
@@ -95,7 +110,7 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
   // Presentation
   if (node.data.type === "presentation") {
     const presentationData = node.data as PresentationData;
-    const hasDataCollection = presentationData.collectName || presentationData.collectEmail;
+    const hasDataCollection = presentationData.collectName || presentationData.collectEmail || presentationData.collectTerms;
 
     return (
       <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-8 md:p-10 space-y-6 text-center">
@@ -110,6 +125,8 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
             />
           )}
         </div>
+
+        <NodeImage src={(presentationData as { image?: string }).image} />
 
         {hasDataCollection && (
           <div className="space-y-3 max-w-sm mx-auto text-left">
@@ -151,6 +168,36 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
           </div>
         )}
 
+        {presentationData.collectTerms && (
+          <div className="max-w-sm mx-auto text-left">
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900/20"
+              />
+              <span className="text-sm text-gray-600">
+                {presentationData.termsText || "Aceito os termos e condições"}
+                {presentationData.termsUrl && (
+                  <>
+                    {" "}
+                    <a
+                      href={presentationData.termsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline hover:text-blue-700"
+                    >
+                      Ver termos
+                    </a>
+                  </>
+                )}
+                {presentationData.termsRequired && <span className="text-red-500 ml-0.5">*</span>}
+              </span>
+            </label>
+          </div>
+        )}
+
         <div className="pt-4">
           <button
             onClick={handleSubmit}
@@ -182,6 +229,8 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
             />
           )}
         </div>
+
+        <NodeImage src={(singleChoiceData as { image?: string }).image} />
 
         <div className="space-y-2 pt-2">
           {(singleChoiceData.options || []).map((option) => (
@@ -243,6 +292,8 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
           )}
           <p className="text-xs text-gray-400 italic">Selecione todas que se aplicam</p>
         </div>
+
+        <NodeImage src={(multipleChoiceData as { image?: string }).image} />
 
         <div className="space-y-2 pt-2">
           {(multipleChoiceData.options || []).map((option) => {
@@ -311,6 +362,8 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
           )}
         </div>
 
+        <NodeImage src={(ratingData as { image?: string }).image} />
+
         <div className="space-y-4 pt-2">
           <div className="flex items-center justify-center gap-3 py-6">
             {ratingRange.map((value) => (
@@ -347,6 +400,45 @@ export function QuestionRenderer({ node, onAnswer }: QuestionRendererProps) {
             className="w-full py-2.5 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors"
           >
             Continuar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // End Screen
+  if (node.data.type === "endScreen") {
+    const endData = node.data as EndScreenData;
+
+    return (
+      <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-8 md:p-10 space-y-6 text-center">
+        <div className="space-y-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            {endData.title}
+          </h1>
+          {endData.description && (
+            <HtmlDescription
+              html={endData.description}
+              className="text-base text-gray-500 max-w-lg mx-auto [&>p]:mb-2 [&>br]:block"
+            />
+          )}
+        </div>
+
+        <NodeImage src={(endData as { image?: string }).image} />
+
+        {endData.showScore && (
+          <div className="flex items-center justify-center gap-2 py-4">
+            <Trophy className="w-6 h-6 text-yellow-500" />
+            <span className="text-2xl font-bold text-gray-900">{totalScore} pontos</span>
+          </div>
+        )}
+
+        <div className="pt-4">
+          <button
+            onClick={() => onAnswer({})}
+            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            Finalizar
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { PresentationNode } from "./presentation-node";
 import { SingleChoiceNode } from "./single-choice-node";
 import { MultipleChoiceNode } from "./multiple-choice-node";
 import { RatingNode } from "./rating-node";
+import { EndScreenNode } from "./end-screen-node";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const nodeTypes: any = {
@@ -9,6 +10,7 @@ export const nodeTypes: any = {
   singleChoice: SingleChoiceNode,
   multipleChoice: MultipleChoiceNode,
   rating: RatingNode,
+  endScreen: EndScreenNode,
 };
 
-export { PresentationNode, SingleChoiceNode, MultipleChoiceNode, RatingNode };
+export { PresentationNode, SingleChoiceNode, MultipleChoiceNode, RatingNode, EndScreenNode };

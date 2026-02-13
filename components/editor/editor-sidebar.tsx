@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleDot, CheckSquare, Star, Play, GripVertical } from "lucide-react";
+import { CircleDot, CheckSquare, Star, Play, FlagTriangleRight, GripVertical } from "lucide-react";
 
 const nodeTypes = [
   {
@@ -31,6 +31,13 @@ const nodeTypes = [
     color: "text-purple-600",
     bg: "bg-purple-100",
   },
+  {
+    id: "endScreen",
+    title: "Tela Final",
+    icon: FlagTriangleRight,
+    color: "text-rose-600",
+    bg: "bg-rose-100",
+  },
 ];
 
 export function EditorSidebar() {
@@ -40,7 +47,7 @@ export function EditorSidebar() {
   };
 
   return (
-    <div className="w-52 bg-white border-r border-gray-200 flex flex-col h-full">
+    <div className="w-56 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100">
         <h3 className="font-semibold text-gray-900 text-sm">Perguntas</h3>
